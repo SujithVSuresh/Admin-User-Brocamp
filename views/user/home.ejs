@@ -1,0 +1,52 @@
+<%- include('../header') %>
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: rgb(252, 206, 0)">
+    <div class="container-fluid">
+      <a style="font-size: 20px; text-decoration: none; color: black; font-size: 30px; font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; font-weight: bold;"  href="#">Yellow Pages</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <!-- <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+          </li> -->
+        </ul> 
+          <a class="btn btn-outline-dark" type="submit" href="/logout">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="container-fluid" style="display: flex; justify-content: center; align-items: center;">
+    
+    <div style="border-style: solid; padding: 30px; border-color: rgb(252, 206, 0); width: 50vw; height: 50vh; border-radius: 20px; display: flex;">
+      <div style="width: 40%; display: flex; align-items: center; flex-direction: column;">
+      <div style="background-color: gray; width:200px; height: 200px; border-radius: 180px; display: flex; justify-content: center; align-items: center;">
+        <!-- <a type="button" href="/edit-profile" class="btn btn-outline-light">Add photo</a> -->
+        <!-- <input class="form-control form-control-sm" id="formFileSm" type="file"> -->
+        <img
+          src="static/images/<%= data.image %>"
+          alt="<%= data.image %>"
+          class="rounded-circle mt-3 mb-3"
+          width="200px"
+          height="200px"
+        />
+      </div>
+      <a class="form-btn" style="width: 80%; margin-top: 30px; text-decoration: none; display: flex; justify-content: center; align-items: center;" href="/edit-profile">Edit profile</a>
+    </div>
+
+      <div style=" width: 60%;">
+        <h1 style="font-size: 60px; font-weight: bold;"><%= data.name %></h1>
+        <h1 style="font-size: 20px; font-weight: bold; color: gray;"><%= data.email %></h1>
+        <h1 style="font-size: 20px; font-weight: bold; color: gray;"><%= data.mobile %></h1>
+      </div>
+    </div>
+  </div>
+  </section>
+
+<%- include('../footer') %>    

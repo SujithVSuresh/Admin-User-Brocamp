@@ -1,0 +1,155 @@
+<%- include('../header') %>
+<section
+  style="
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  "
+>
+  <% if (typeof msg !== 'undefined') { %>
+  <div
+    style="
+      background-color: rgb(255, 142, 142);
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+    "
+    class="w-25 text-white mb-2"
+  >
+    <%= msg %>
+  </div>
+
+  <% } %>
+  <form
+    action="/login"
+    id="loginForm"
+    method="POST"
+    autocomplete="off"
+    class="p-4 w-25"
+    style="
+      border-radius: 20px;
+      border-style: solid;
+      border-width: 5px;
+      border-color: rgb(252, 206, 0);
+      width: 60%;
+      background-color: rgba(255, 255, 0, 0.597);
+    "
+  >
+    <div style="margin-top: 15px; display: flex; justify-content: center">
+      <h3 style="font-weight: bold; margin-bottom: 20px">Login</h3>
+    </div>
+    <div class="form-group my-2">
+      <label for="exampleInputEmail1">Email address</label>
+      <input
+        type="email"
+        class="form-control required email"
+        id="exampleInputEmail1"
+        aria-describedby="emailHelp"
+        placeholder="Enter email"
+        name="email"
+      />
+    </div>
+
+    <div class="form-group my-2">
+      <label for="exampleInputPassword1">Password</label>
+      <input
+        type="password"
+        class="form-control required password"
+        id="exampleInputPassword1"
+        placeholder="Password"
+        name="password"
+      />
+    </div>
+
+    <button type="submit" class="form-btn">Submit</button>
+
+    <div style="margin-top: 15px; display: flex; justify-content: center">
+      <small>Don't have an accout? <a href="/signup">Signup</a></small>
+    </div>
+  </form>
+</section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $("#loginForm").submit(function (event) {
+      event.preventDefault();
+      var isValid = true;
+
+      $(".error").empty();
+
+      $(this)
+        .find(".required")
+        .each(function () {
+          var $input = $(this);
+          if ($input.val() === "") {
+            isValid = false;
+            $input.after(
+              '<div class="error text-danger">' +
+                $input.attr("name") +
+                " is required.</div>"
+            );
+          }
+        });
+
+      $(this)
+        .find(".required")
+        .each(function () {
+          var $input = $(this);
+          if ($input.val().includes(" ")) {
+            isValid = false;
+            $input.after(
+              '<div class="error text-danger">' +
+                $input.attr("name") +
+                " should not contain white spaces.</div>"
+            );
+          }
+        });
+
+      $(this)
+        .find(".email")
+        .each(function () {
+          var $input = $(this);
+
+          if ($input.val() !== "") {
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test($input.val())) {
+              isValid = false;
+              $input.after(
+                '<div class="error text-danger">' +
+                  $input.attr("name") +
+                  " is not a valid email address.</div>"
+              );
+            }
+          }
+        });
+
+      $(this)
+        .find(".password")
+        .each(function () {
+          var $input = $(this);
+
+          if ($input.val() !== "") {
+            //var minLength = parseInt($input.attr('minlength'));
+            var minLength = 8;
+            if ($input.val().length < minLength) {
+              isValid = false;
+              $input.after(
+                '<div class="error text-danger">' +
+                  $input.attr("name") +
+                  " must be at least " +
+                  minLength +
+                  " characters long.</div>"
+              );
+            }
+          }
+        });
+      if (isValid) {
+        // Form is valid, submit it
+        this.submit();
+      }
+    });
+  });
+</script>
+<%- include('../footer') %>

@@ -1,0 +1,28 @@
+* {
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+section {
+  min-height: 100vh;
+  /* padding: 0 50px 0 50px; */
+  /* background-color: yellow; */
+}
+
+.form-btn {
+  width: 100%;
+  border: 0;
+  height: 40px;
+  border-radius: 10px;
+  background-color: black;
+  color: white;
+  margin-top: 10px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
