@@ -1,24 +1,143 @@
 <%- include('../header') %>
 
-<section style="height: 100vh; display: flex; justify-content: center; align-items: center;">
-<!-- <h1>Login</h1> -->
+<section
+  style="
+    height: 100vh;
+  "
+  class="d-flex flex-column justify-content-center align-items-center"
+>
+  <!-- <h1>Login</h1> -->
 
-<form action="/admin" method="POST" autocomplete="off" class="p-4 w-25" style="border-radius: 20px; border-style: solid; border-width: 5px; border-color: black; width: 60%; background-color: rgba(171, 171, 171, 0.597);">
-  <div style="margin-top: 15px; display: flex; justify-content: center;">
-    <h3 style="font-weight: bold; margin-bottom: 20px;">Login as admin</h3>
-  </div>
+  <div class="alert alert-danger w-25 d-none" id="alert-msg" role="alert"></div>
+  <form
+    action="/admin"
+    method="POST"
+    id="loginForm"
+    autocomplete="off"
+    class="p-4 w-25"
+    style="
+      border-radius: 20px;
+      border-style: solid;
+      border-width: 5px;
+      border-color: black;
+      background-color: rgba(171, 171, 171, 0.597);
+    "
+  >
+    <div style="margin-top: 15px; display: flex; justify-content: center">
+      <h3 style="font-weight: bold; margin-bottom: 20px">Login as admin</h3>
+    </div>
     <div class="form-group my-2">
       <label for="exampleInputEmail1">Email address</label>
-      <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="email">
+      <input
+        id="email"
+        type="email"
+        class="form-control"
+        id="exampleInputEmail1"
+        aria-describedby="emailHelp"
+        placeholder="Enter email"
+        name="email"
+        value="sujith@gmail.com"
+      />
+      <span id="emailError" style="color: red"></span>
     </div>
 
     <div class="form-group my-2">
       <label for="exampleInputPassword1">Password</label>
-      <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
+      <input
+        id="password"
+        type="password"
+        class="form-control"
+        id="exampleInputPassword1"
+        placeholder="Password"
+        name="password"
+        value="sujith@123"
+      />
+      <span id="passwordError" style="color: red"></span>
     </div>
 
     <button type="submit" class="form-btn">Submit</button>
-</form>
+  </form>
 </section>
 
+<script>
+  document.getElementById("loginForm").addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let emailError = document.getElementById("emailError");
+    let passwordError = document.getElementById("passwordError");
+    let isValid = true;
+
+    //Email validation
+    if (!email.trim()) {
+      emailError.textContent = "Email is required";
+      isValid = false;
+    } else if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      emailError.textContent = "Please enter a valid email address";
+      isValid = false;
+    } else if (/\s/.test(email) && /^\s|\s$/.test(email)) {
+      emailError.textContent = "Email cannot contain whitespace";
+      isValid = false;
+    } else {
+      emailError.textContent = "";
+    }
+
+    //Password validation
+    if (!password.trim()) {
+      passwordError.textContent = "Password is required";
+      isValid = false;
+    } else if (password && password.length < 8) {
+      passwordError.textContent = "Password must be at least 8 characters long";
+      isValid = false;
+    } else if (/\s/.test(password) && /^\s|\s$/.test(password)) {
+      passwordError.textContent = "Password cannot contain whitespace";
+      isValid = false;
+    } else {
+      passwordError.textContent = "";
+    }
+
+    if (isValid) {
+      fetch(`/admin`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email, password: password }),
+      })
+        .then((response) => {
+          if (response.ok) {
+            console.log("User login successfully");
+
+            window.location.href = "/admin/dashboard";
+          } else {
+            response
+              .json()
+              .then((data) => {
+                if (data && data.message) {
+                  //console.log(data.message);
+                  let alertMsg = document.getElementById("alert-msg");
+                  alertMsg.textContent = data.message;
+                  alertMsg.classList.remove("d-none");
+                  alertMsg.classList.add("d-block");
+                  setTimeout(function () {
+                    alertMsg.classList.remove("d-block");
+                    alertMsg.classList.add("d-none");
+                  }, 3000);
+                } else {
+                  console.log("Failed to log in"); // Default message if no specific message is available
+                }
+              })
+              .catch((error) => {
+                // Handle parsing error
+                console.log("Failed to parse response body");
+              });
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+  });
+</script>
 <%- include('../footer') %>

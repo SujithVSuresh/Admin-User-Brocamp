@@ -30,11 +30,14 @@ const login = async (req, res) => {
       !user.is_admin
     ) {
       req.session.userId = user._id;
-      res.redirect("/");
+      // res.redirect("/");
+      res.status(200).json({ message: "login successfull" });
     } else {
-      res.render("user/login", {
-        msg: "User with this credentials does not exist",
-      });
+      // res.render("user/login", {
+      //   msg: "User with this credentials does not exist",
+      // });
+
+      res.status(401).json({ message: "No user found with these credentials." });
     }
   }
 };
@@ -42,16 +45,27 @@ const login = async (req, res) => {
 const signup = async (req, res) => {
   if (req.method === "POST") {
     try {
-      const { name, email, phone, password2 } = req.body;
-      const hashedPassword = await bcrypt.hash(password2, 10);
-      const newUser = new User({
+      const { name, email, phone, password } = req.body;
+
+      const checkUser = await User.findOne({email: email})
+      
+      if(!checkUser){
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({
         name: name,
         email: email,
         mobile: phone,
         password: hashedPassword,
       });
       await newUser.save();
-      res.redirect("/login");
+      // res.redirect("/login");
+      res.status(200).json({ message: "login successfull" })
+
+      }else{
+        res.status(401).json({ message: "User with this email address already exist." })
+      }
+      
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server Error" });
@@ -81,6 +95,9 @@ const editProfile = async (req, res) => {
   if (req.method === "POST") {
     const { name, email, phone } = req.body;
 
+    const checkUser = await User.findOne({email: email, _id:{$ne: req.session.userId }})
+      
+    if(!checkUser){
     if (req.file) {
       const userData = await User.findByIdAndUpdate(
         { _id: req.session.userId },
@@ -93,14 +110,17 @@ const editProfile = async (req, res) => {
           },
         }
       );
+      res.status(200).json({ message: "Profile updated successfully" })
     } else {
       const userData = await User.findByIdAndUpdate(
         { _id: req.session.userId },
         { $set: { name: name, email: email, mobile: phone } }
       );
+      res.status(200).json({ message: "Profile updated successfully" })
     }
-
-    res.redirect("/");
+  }else{
+    res.status(401).json({ message: "User with this email address already exist." })
+  }
   }
 };
 

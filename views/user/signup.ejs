@@ -14,7 +14,16 @@
       Welcome to Yellow Pages...
     </a>
   </div>
-  <div style="width: 40%; display: flex; align-items: center">
+  <div
+    style="width: 40%"
+    class="d-flex flex-column justify-content-center align-items"
+  >
+    <div
+      class="alert alert-danger w-50 d-none"
+      id="alert-msg"
+      role="alert"
+    ></div>
+
     <form
       action="/signup"
       id="signupForm"
@@ -39,52 +48,59 @@
       <div class="form-group my-2">
         <label for="exampleInputEmail1">Name</label>
         <input
+          id="name"
           type="text"
           class="form-control required"
           placeholder="Enter name"
           name="name"
         />
+        <span id="nameError" style="color: red"></span>
       </div>
       <div class="form-group my-2">
         <label for="exampleInputEmail1">Email address</label>
         <input
+          id="email"
           type="email"
           class="form-control required"
-          id="exampleInputEmail1"
           aria-describedby="emailHelp"
           placeholder="Enter email"
           name="email"
         />
+        <span id="emailError" style="color: red"></span>
       </div>
       <div class="form-group my-2">
         <label for="exampleInputEmail1">Phone</label>
         <input
+          id="phone"
           type="text"
           class="form-control required"
           placeholder="Enter phone"
           name="phone"
         />
+        <span id="phoneError" style="color: red"></span>
       </div>
       <div class="form-group my-2">
         <label for="exampleInputPassword1">Password</label>
         <input
+          id="password"
           type="password"
           class="form-control required password"
-          id="exampleInputPassword1"
           placeholder="Password"
           name="password1"
         />
+        <span id="passwordError" style="color: red"></span>
       </div>
 
       <div class="form-group my-2">
         <label for="exampleInputPassword1">Reenter password</label>
         <input
+          id="password2"
           type="password"
           class="form-control required"
-          id="exampleInputPassword1"
           placeholder="Password"
           name="password2"
         />
+        <span id="password2Error" style="color: red"></span>
       </div>
 
       <button type="submit" class="form-btn">Submit</button>
@@ -96,88 +112,210 @@
   </div>
 </section>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
 <script>
-  $(document).ready(function () {
-    $("#signupForm").submit(function (event) {
-      event.preventDefault();
-      var isValid = true;
+  document.getElementById("signupForm").addEventListener("submit", (event) => {
+    event.preventDefault();
 
-      $(".error").empty();
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let phone = document.getElementById("phone").value;
+    let name = document.getElementById("name").value;
+    let password2 = document.getElementById("password2").value;
 
-      $(this)
-        .find(".required")
-        .each(function () {
-          var $input = $(this);
-          if ($input.val() === "") {
-            isValid = false;
-            $input.after(
-              '<div class="error text-danger">' +
-                $input.attr("name") +
-                " is required.</div>"
-            );
+    let emailError = document.getElementById("emailError");
+    let passwordError = document.getElementById("passwordError");
+    let phoneError = document.getElementById("phoneError");
+    let nameError = document.getElementById("nameError");
+    let password2Error = document.getElementById("password2Error");
+    let isValid = true;
+
+    //Email validation
+    if (!email.trim()) {
+      emailError.textContent = "Email is required";
+      isValid = false;
+    } else if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      emailError.textContent = "Please enter a valid email address";
+      isValid = false;
+    } else if (/\s/.test(email) && /^\s|\s$/.test(email)) {
+      emailError.textContent = "Email cannot contain whitespace";
+      isValid = false;
+    } else {
+      emailError.textContent = "";
+    }
+
+    //Password validation
+    if (!password.trim()) {
+      passwordError.textContent = "Password is required";
+      isValid = false;
+    } else if (password && password.length < 8) {
+      passwordError.textContent = "Password must be at least 8 characters long";
+      isValid = false;
+    } else if (/\s/.test(password) && /^\s|\s$/.test(password)) {
+      passwordError.textContent = "Password cannot contain whitespace";
+      isValid = false;
+    } else {
+      passwordError.textContent = "";
+    }
+
+    //Password 2 validation
+    if (!password2.trim()) {
+      password2Error.textContent = "Password confirmation is required";
+      isValid = false;
+    } else if (password !== password2) {
+      password2Error.textContent = "Passwords do not match";
+    } else {
+      password2Error.textContent = "";
+    }
+
+    //Name validation
+    if (!name.trim()) {
+      nameError.textContent = "Name is required";
+      isValid = false;
+    } else {
+      nameError.textContent = "";
+    }
+
+    //Phone validation
+    if (!phone.trim()) {
+      phoneError.textContent = "Phone number is required";
+      isValid = false;
+    } else if (
+      phone &&
+      !/^\(?([0-9]{3})\)?[- ]?([0-9]{3})[- ]?([0-9]{4})$/.test(phone)
+    ) {
+      phoneError.textContent = "Enter a valid phone number";
+    } else {
+      phoneError.textContent = "";
+    }
+
+    if (isValid) {
+      fetch(`/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          phone: phone,
+          name: name,
+        }),
+      })
+        .then((response) => {
+          if (response.ok) {
+            console.log("User signup successfully");
+
+            window.location.href = "/login";
+          } else {
+            response
+              .json()
+              .then((data) => {
+                if (data && data.message) {
+                  //console.log(data.message);
+                  let alertMsg = document.getElementById("alert-msg");
+                  alertMsg.textContent = data.message;
+                  alertMsg.classList.remove("d-none");
+                  alertMsg.classList.add("d-block");
+                  setTimeout(function () {
+                    alertMsg.classList.remove("d-block");
+                    alertMsg.classList.add("d-none");
+                  }, 3000);
+                } else {
+                  console.log("Failed to log in"); // Default message if no specific message is available
+                }
+              })
+              .catch((error) => {
+                // Handle parsing error
+                console.log("Failed to parse response body");
+              });
           }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
         });
-
-      $(this)
-        .find(".required")
-        .each(function () {
-          var $input = $(this);
-          if ($input.val().includes(" ")) {
-            isValid = false;
-            $input.after(
-              '<div class="error text-danger">' +
-                $input.attr("name") +
-                " should not contain white spaces.</div>"
-            );
-          }
-        });
-
-      $(this)
-        .find(".email")
-        .each(function () {
-          var $input = $(this);
-
-          if ($input.val() !== "") {
-            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test($input.val())) {
-              isValid = false;
-              $input.after(
-                '<div class="error text-danger">' +
-                  $input.attr("name") +
-                  " is not a valid email address.</div>"
-              );
-            }
-          }
-        });
-
-      $(this)
-        .find(".password")
-        .each(function () {
-          var $input = $(this);
-
-          if ($input.val() !== "") {
-            //var minLength = parseInt($input.attr('minlength'));
-            var minLength = 8;
-            if ($input.val().length < minLength) {
-              isValid = false;
-              $input.after(
-                '<div class="error text-danger">' +
-                  $input.attr("name") +
-                  " must be at least " +
-                  minLength +
-                  " characters long.</div>"
-              );
-            }
-          }
-        });
-
-      if (isValid) {
-        // Form is valid, submit it
-        this.submit();
-      }
-    });
+    }
   });
+  // $(document).ready(function () {
+  //   $("#signupForm").submit(function (event) {
+  //     event.preventDefault();
+  //     var isValid = true;
+
+  //     $(".error").empty();
+
+  //     $(this)
+  //       .find(".required")
+  //       .each(function () {
+  //         var $input = $(this);
+  //         if ($input.val() === "") {
+  //           isValid = false;
+  //           $input.after(
+  //             '<div class="error text-danger">' +
+  //               $input.attr("name") +
+  //               " is required.</div>"
+  //           );
+  //         }
+  //       });
+
+  //     $(this)
+  //       .find(".required")
+  //       .each(function () {
+  //         var $input = $(this);
+  //         if ($input.val().includes(" ")) {
+  //           isValid = false;
+  //           $input.after(
+  //             '<div class="error text-danger">' +
+  //               $input.attr("name") +
+  //               " should not contain white spaces.</div>"
+  //           );
+  //         }
+  //       });
+
+  //     $(this)
+  //       .find(".email")
+  //       .each(function () {
+  //         var $input = $(this);
+
+  //         if ($input.val() !== "") {
+  //           var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //           if (!emailRegex.test($input.val())) {
+  //             isValid = false;
+  //             $input.after(
+  //               '<div class="error text-danger">' +
+  //                 $input.attr("name") +
+  //                 " is not a valid email address.</div>"
+  //             );
+  //           }
+  //         }
+  //       });
+
+  //     $(this)
+  //       .find(".password")
+  //       .each(function () {
+  //         var $input = $(this);
+
+  //         if ($input.val() !== "") {
+  //           //var minLength = parseInt($input.attr('minlength'));
+  //           var minLength = 8;
+  //           if ($input.val().length < minLength) {
+  //             isValid = false;
+  //             $input.after(
+  //               '<div class="error text-danger">' +
+  //                 $input.attr("name") +
+  //                 " must be at least " +
+  //                 minLength +
+  //                 " characters long.</div>"
+  //             );
+  //           }
+  //         }
+  //       });
+
+  //     if (isValid) {
+  //       // Form is valid, submit it
+  //       this.submit();
+  //     }
+  //   });
+  // });
 </script>
 
 <%- include('../footer') %>

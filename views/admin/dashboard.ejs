@@ -1,7 +1,7 @@
 <%- include('../header') %>
 
 <nav
-  class="navbar navbar-expand-lg navbar-light"
+  class="navbar navbar-expand-lg navbar-dark bg-dark"
   style="background-color: black"
 >
   <div class="container-fluid">
@@ -30,23 +30,20 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <!-- <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-          </li> -->
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#"></a>
+        </li>
       </ul>
-      <a class="btn btn-outline-light" type="submit" href="/admin/logout">Logout</a>
+      <div></div>
+      <a class="btn btn-outline-light" type="submit" href="/admin/logout"
+        >Logout</a
+      >
     </div>
   </div>
 </nav>
 
 <section>
-  <div
+  <!-- <div
     style="
       width: 100%;
       height: 20%;
@@ -57,7 +54,6 @@
     "
   >
     <div></div>
-    <!-- <form class="form-inline" style="display: flex; display: flex; align-items: center; justify-content: center;"> -->
 
     <div class="form-group mx-sm-3 mb-2" style="display: flex">
       <input
@@ -71,7 +67,7 @@
         Search
       </button>
     </div>
-    <!-- </form> -->
+ 
     <a
       href="dashboard/add-user"
       class="form-btn"
@@ -84,6 +80,53 @@
       "
       >Add User</a
     >
+  </div>  -->
+
+  <div class="container">
+    <div class="row pt-3 pb-3">
+      <div
+        class="col-md-4 d-flex align-items-end"
+        style="font-weight: bold; font-size: larger"
+      >
+        <!-- Content for the first column -->
+        <p>Admin: <%= data.name %></p>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <!-- Content for the second column -->
+        <div class="form-group d-flex align-items-center">
+          <input
+            type="text"
+            class="form-control"
+            id="searchInput"
+            placeholder="Search"
+          />
+
+          <button
+            onclick="userDataFunc()"
+            id="searchBtn"
+            class="btn btn-outline-dark mx-2"
+          >
+            Search
+          </button>
+        </div>
+      </div>
+
+      <div class="col-md-4 d-flex justify-content-end">
+        <!-- Content for the second column -->
+        <a
+          href="dashboard/add-user"
+          class="form-btn"
+          style="
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+          "
+          >Add User</a
+        >
+      </div>
+    </div>
   </div>
 
   <div class="card-grid" id="card-container"></div>
@@ -124,134 +167,101 @@
     </div>
   </div> -->
 
-
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
   <script>
-  
-    
-    $(document).ready(function () {
-      // Function to fetch and update data list
-      function updateDataList() {
-        $.ajax({
-          type: "GET",
-          url: "/admin/dashboard/fetch-all-users", // URL to fetch data from
-          success: function (dataList) {
-            console.log("ui", dataList)
-            $("#card-container").empty(); // Clear previous data
-            // Append each item in the data list to the unordered list
-            $.each(dataList, function (index, data) {
-      
-              $("#card-container").append(
-                '<div style="border-radius: 20px; border-style: solid; border-width: 0.5px; border-color: gray; padding: 10px; display: flex;">' +
-        '<div style="background-color: gray; width:100px; height: 100px; border-radius: 180px;">' +
-            '<img src="/static/images/' + data.image + '" width="100px" height="100px" style="border-radius: 180px;"/>' +
-        '</div>' +
-        '<div style="margin-left: 10px;">' +
-            '<div>' +
-                '<h6 style="font-weight: bold">' + data.name + '</h6>' +
-                '<h6>' + data.email + '</h6>' +
-                '<h6>' + data.mobile + '</h6>' +
-            '</div>' +
-            '<div>' +
-                '<a class="btn btn-outline-primary" href="dashboard/edit-user?id=' + data._id + '">Edit</a>' +
-                '<a type="button" id="deleteBtn" data-user-id="' + data._id + '" class="btn btn-outline-danger mx-2 deleteBtn">Delete</a>' +
-            '</div>' +
-        '</div>' +
-    '</div>'
-              );
+    function userDataFunc() {
+      const cardContainer = document.getElementById("card-container");
+
+      const searchResult = document.getElementById("searchInput").value;
+
+      // Assuming you're using fetch API to get user data
+      fetch(`/admin/dashboard/fetch-all-users?search=${searchResult}`) // Replace '/user-data' with your actual endpoint
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          cardContainer.innerHTML = "";
+
+          // Process the fetched user data
+          console.log("User data:", data);
+
+          if (data.length !== 0) {
+            data.forEach((user) => {
+              cardContainer.innerHTML += `
+        <div id="${user._id}" style="border-radius: 20px; border-style: solid; border-width: 0.5px; border-color: gray; padding: 10px; display: flex;">
+            <div style="background-color: gray; width:100px; height: 100px; border-radius: 180px;">
+                <img src="/static/images/${user.image}" width="100px" height="100px" style="border-radius: 180px;"/>
+            </div>
+            <div style="margin-left: 10px;">
+                <div>
+                    <h6 style="font-weight: bold">${user.name}</h6>
+                    <h6>${user.email}</h6>
+                    <h6>${user.mobile}</h6>
+                </div>
+                <div>
+                    <a class="btn btn-outline-primary" href="dashboard/edit-user?id=${user._id}">Edit</a>
+                    <a type="button" id="deleteBtn" class="btn btn-outline-danger mx-2 deleteBtn" data-user-id="${user._id}">Delete</a>
+                </div>
+            </div>
+        </div>`;
             });
-          },
-          error: function (xhr, status, error) {
-            console.error(xhr.responseText); // Log error response
-            // Optionally handle error response
-          },
+          } else {
+            cardContainer.innerHTML = "<div><h1>No Users Found</h1></div>";
+          }
+        })
+        .catch((error) => {
+          console.error("There was a problem fetching user data:", error);
         });
-      }
+    }
 
-      // Search data using Ajax
-      $("#searchBtn").click(function () {
-        const query = $("#searchInput").val(); // Get search query
-        $.ajax({
-          type: "GET",
-          url: "/admin/dashboard/search-users", // URL to search for data
-          data: { query: query }, // Pass search query as parameter
-          success: function (filteredData) {
-            // Update data list with filtered data
-            $("#card-container").empty(); // Clear previous data
-            $.each(filteredData, function (index, data) {
-              $("#card-container").append(
-                '<div style="border-radius: 20px; border-style: solid; border-width: 0.5px; border-color: gray; padding: 10px; display: flex;">' +
-        '<div style="background-color: gray; width:100px; height: 100px; border-radius: 180px;">' +
-            '<img src="/static/images/' + data.image + '" width="100px" height="100px" style="border-radius: 180px;"/>' +
-        '</div>' +
-        '<div style="margin-left: 10px;">' +
-            '<div>' +
-                '<h6 style="font-weight: bold">' + data.name + '</h6>' +
-                '<h6>' + data.email + '</h6>' +
-                '<h6>' + data.mobile + '</h6>' +
-            '</div>' +
-            '<div>' +
-                '<a class="btn btn-outline-primary" href="dashboard/edit-user?id=' + data._id + '">Edit</a>' +
-                '<a type="button" id="deleteBtn" data-user-id="' + data._id + '" class="btn btn-outline-danger mx-2 deleteBtn">Delete</a>' +
-            '</div>' +
-        '</div>' +
-    '</div>'
-              );
-            });
-          },
-          error: function (xhr, status, error) {
-            console.error(xhr.responseText); // Log error response
-            // Optionally handle error response
-          },
-        });
-      });
- 
-
-    
-
-      // Fetch and update data list initially
-      updateDataList();
+    document.addEventListener("DOMContentLoaded", function (event) {
+      userDataFunc();
     });
 
-    document.addEventListener('click', function(event) {
-    // Check if the clicked element has the ID "deleteBtn"
-    if (event.target && event.target.id === "deleteBtn") {
-        // Prevent default behavior of anchor tag (redirecting)
+    document.addEventListener("click", function (event) {
+      const cardContainer = document.getElementById("card-container");
+
+      if (event.target && event.target.id === "deleteBtn") {
         event.preventDefault();
 
-        const confirmed = window.confirm("Are you sure you want to delete this user?");
+        const confirmed = window.confirm(
+          "Are you sure you want to delete this user?"
+        );
 
         if (confirmed) {
-            // Get the user ID from the data attribute
-            const userId = event.target.getAttribute('data-user-id');
+          const userId = event.target.getAttribute("data-user-id");
 
-            // Send a POST request to delete the user
-            fetch(`dashboard/delete-user`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ userId: userId })
+          fetch(`dashboard/delete-user`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userId: userId }),
+          })
+            .then((response) => {
+              if (response.ok) {
+                //window.location.href = "/admin/dashboard";
+                const childElement = document.getElementById(`${userId}`);
+                cardContainer.removeChild(childElement)
+
+                console.log("User deleted successfully");
+              } else {
+                console.error("Failed to delete user");
+              }
             })
-            .then(response => {
-                if (response.ok) {
-                  window.location.href = '/admin/dashboard';
-                    console.log("User deleted successfully");
-                } else {
-                    console.error('Failed to delete user');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+            .catch((error) => {
+              console.error("Error:", error);
             });
         }
 
         // Perform your delete action here
-        console.log("btn dlt");
-    }
-});
+      }
+    });
   </script>
 
   <%- include('../footer') %>

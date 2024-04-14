@@ -12,32 +12,35 @@ const login = async (req, res) => {
 
   if (req.method === "POST") {
     const { email, password } = req.body;
+    
 
     const user = await User.findOne({ email: email, is_admin: true });
-    console.log("HI", user, "email & pass", email, password);
 
     if (user && (await bcrypt.compare(password, user.password))) {
       req.session.adminId = user._id;
-      res.redirect("/admin/dashboard");
+      //res.redirect("/admin/dashboard");
+      res.status(200).json({ message: "login successfull" });
     } else {
-      res.status(401).send("Invalid username or password");
+      //res.status(401).send("Invalid username or password");
+      res.status(401).json({ message: "No user found with these credentials." });
     }
   }
 };
 
 const dashboard = async (req, res) => {
-  res.render("admin/dashboard");
+  
+  const admin = await User.findOne({ _id: req.session.adminId });
+  console.log("admin", admin);
+  res.render("admin/dashboard", {data: admin});
 };
 
 const fetchAllUsers = async (req, res) => {
-  console.log("uuii", req);
+  console.log(req.query.search, "jiij")
+  if(!req.query.search){
   const data = await User.find({ is_admin: false });
-  console.log(data, "ooi");
   res.json(data);
-};
-
-const searchUsers = async (req, res) => {
-  const query = req.query.query.toLowerCase();
+  }else{
+    const query = req.query.search.toLowerCase();
 
   const data = await User.find({ is_admin: false });
 
@@ -45,7 +48,10 @@ const searchUsers = async (req, res) => {
     data.name.toLowerCase().includes(query)
   );
   res.json(filteredData);
+
+  }
 };
+
 
 const addUser = async (req, res) => {
   if (req.method === "GET") {
@@ -53,16 +59,38 @@ const addUser = async (req, res) => {
   }
 
   if (req.method === "POST") {
-    const { name, email, phone, password2 } = req.body;
-    const hashedPassword = await bcrypt.hash(password2, 10);
-    const newUser = new User({
-      name: name,
-      email: email,
-      mobile: phone,
-      password: hashedPassword,
-    });
-    await newUser.save();
-    res.redirect("/admin/dashboard");
+    
+    const { name, email, phone, password } = req.body;
+
+    const checkUser = await User.findOne({email: email})
+ 
+    if(!checkUser){
+    const hashedPassword = await bcrypt.hash(password, 10);
+    if(req.file){
+      const newUser = new User({
+        name: name,
+        email: email,
+        mobile: phone,
+        password: hashedPassword,
+        image: req.file.filename,
+      });
+      await newUser.save();
+    }else{
+      const newUser = new User({
+        name: name,
+        email: email,
+        mobile: phone,
+        password: hashedPassword,
+      });
+      await newUser.save();
+    }
+    
+    
+    //res.redirect("/admin/dashboard");
+    res.status(200).json({ message: "User created successfully" })
+  }else{
+    res.status(401).json({ message: "User with this email address already exist." })
+  }
   }
 };
 
@@ -80,11 +108,15 @@ const editUser = async (req, res) => {
   }
 
   if (req.method === "POST") {
-    const { name, email, phone } = req.body;
+    console.log("guiog");
+      const { name, email, phone, id } = req.body;
 
+    const checkUser = await User.findOne({email: email, _id:{$ne: id}})
+      
+    if(!checkUser){
     if (req.file) {
       const userData = await User.findByIdAndUpdate(
-        { _id: req.query.id },
+        { _id: id },
         {
           $set: {
             name: name,
@@ -94,21 +126,23 @@ const editUser = async (req, res) => {
           },
         }
       );
+      res.status(200).json({ message: "Profile updated successfully" })
     } else {
       const userData = await User.findByIdAndUpdate(
-        { _id: req.query.id },
+        { _id: id },
         { $set: { name: name, email: email, mobile: phone } }
       );
+      res.status(200).json({ message: "Profile updated successfully" })
     }
-
-    res.redirect("/admin/dashboard");
+  }else{
+    res.status(401).json({ message: "User with this email address already exist." })
+  }
   }
 };
 
 const deleteUser = async (req, res) => {
   try {
     const { userId } = req.body;
-    console.log(userId);
 
     const deletedUser = await User.findByIdAndDelete(userId);
     if (deletedUser) {
@@ -138,7 +172,6 @@ module.exports = {
   logout,
   dashboard,
   fetchAllUsers,
-  searchUsers,
   addUser,
   editUser,
   deleteUser,

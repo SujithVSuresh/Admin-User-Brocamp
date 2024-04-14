@@ -2,6 +2,7 @@ const express = require("express");
 const adminController = require("../controllers/adminController");
 const auth = require("../middleware/adminAuth");
 const multer = require("multer");
+const path = require("path");
 
 const router = express.Router();
 
@@ -31,13 +32,9 @@ router.get(
   auth.isAdminLogin,
   adminController.fetchAllUsers
 );
-router.get(
-  "/dashboard/search-users",
-  auth.isAdminLogin,
-  adminController.searchUsers
-);
+
 router.get("/dashboard/add-user", auth.isAdminLogin, adminController.addUser);
-router.post("/dashboard/add-user", auth.isAdminLogin, adminController.addUser);
+router.post("/dashboard/add-user", auth.isAdminLogin, upload.single("image"), adminController.addUser);
 
 router.get("/dashboard/edit-user", auth.isAdminLogin, adminController.editUser);
 router.post(

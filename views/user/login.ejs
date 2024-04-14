@@ -8,7 +8,7 @@
     align-items: center;
   "
 >
-  <% if (typeof msg !== 'undefined') { %>
+  <!-- <% if (typeof msg !== 'undefined') { %>
   <div
     style="
       background-color: rgb(255, 142, 142);
@@ -21,7 +21,10 @@
     <%= msg %>
   </div>
 
-  <% } %>
+  <% } %> -->
+
+  <div class="alert alert-danger w-25 d-none" id="alert-msg" role="alert"></div>
+
   <form
     action="/login"
     id="loginForm"
@@ -43,113 +46,194 @@
     <div class="form-group my-2">
       <label for="exampleInputEmail1">Email address</label>
       <input
+        id="email"
         type="email"
         class="form-control required email"
-        id="exampleInputEmail1"
         aria-describedby="emailHelp"
         placeholder="Enter email"
         name="email"
       />
+      <span id="emailError" style="color: red"></span>
     </div>
 
     <div class="form-group my-2">
       <label for="exampleInputPassword1">Password</label>
       <input
         type="password"
+        id="password"
         class="form-control required password"
-        id="exampleInputPassword1"
         placeholder="Password"
         name="password"
       />
+      <span id="passwordError" style="color: red"></span>
     </div>
 
     <button type="submit" class="form-btn">Submit</button>
 
-    <div style="margin-top: 15px; display: flex; justify-content: center">
+    <div style="margin-top: 15px;" class="d-flex justify-content-center">
       <small>Don't have an accout? <a href="/signup">Signup</a></small>
     </div>
   </form>
 </section>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
 <script>
-  $(document).ready(function () {
-    $("#loginForm").submit(function (event) {
-      event.preventDefault();
-      var isValid = true;
+document.getElementById("loginForm").addEventListener("submit", (event) => {
+    event.preventDefault();
 
-      $(".error").empty();
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let emailError = document.getElementById("emailError");
+    let passwordError = document.getElementById("passwordError");
+    let isValid = true;
 
-      $(this)
-        .find(".required")
-        .each(function () {
-          var $input = $(this);
-          if ($input.val() === "") {
-            isValid = false;
-            $input.after(
-              '<div class="error text-danger">' +
-                $input.attr("name") +
-                " is required.</div>"
-            );
+    //Email validation
+    if (!email.trim()) {
+      emailError.textContent = "Email is required";
+      isValid = false;
+    } else if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      emailError.textContent = "Please enter a valid email address";
+      isValid = false;
+    } else if (/\s/.test(email) && /^\s|\s$/.test(email)) {
+      emailError.textContent = "Email cannot contain whitespace";
+      isValid = false;
+    } else {
+      emailError.textContent = "";
+    }
+
+    //Password validation
+    if (!password.trim()) {
+      passwordError.textContent = "Password is required";
+      isValid = false;
+    } else if (password && password.length < 8) {
+      passwordError.textContent = "Password must be at least 8 characters long";
+      isValid = false;
+    } else if (/\s/.test(password) && /^\s|\s$/.test(password)) {
+      passwordError.textContent = "Password cannot contain whitespace";
+      isValid = false;
+    } else {
+      passwordError.textContent = "";
+    }
+
+    if (isValid) {
+      fetch(`/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email, password: password }),
+      })
+        .then((response) => {
+          if (response.ok) {
+            console.log("User login successfully");
+
+            window.location.href = "/";
+          } else {
+            response
+              .json()
+              .then((data) => {
+                if (data && data.message) {
+                  //console.log(data.message);
+                  let alertMsg = document.getElementById("alert-msg");
+                  alertMsg.textContent = data.message;
+                  alertMsg.classList.remove("d-none");
+                  alertMsg.classList.add("d-block");
+                  setTimeout(function () {
+                    alertMsg.classList.remove("d-block");
+                    alertMsg.classList.add("d-none");
+                  }, 3000);
+                } else {
+                  console.log("Failed to log in"); // Default message if no specific message is available
+                }
+              })
+              .catch((error) => {
+                // Handle parsing error
+                console.log("Failed to parse response body");
+              });
           }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
         });
-
-      $(this)
-        .find(".required")
-        .each(function () {
-          var $input = $(this);
-          if ($input.val().includes(" ")) {
-            isValid = false;
-            $input.after(
-              '<div class="error text-danger">' +
-                $input.attr("name") +
-                " should not contain white spaces.</div>"
-            );
-          }
-        });
-
-      $(this)
-        .find(".email")
-        .each(function () {
-          var $input = $(this);
-
-          if ($input.val() !== "") {
-            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test($input.val())) {
-              isValid = false;
-              $input.after(
-                '<div class="error text-danger">' +
-                  $input.attr("name") +
-                  " is not a valid email address.</div>"
-              );
-            }
-          }
-        });
-
-      $(this)
-        .find(".password")
-        .each(function () {
-          var $input = $(this);
-
-          if ($input.val() !== "") {
-            //var minLength = parseInt($input.attr('minlength'));
-            var minLength = 8;
-            if ($input.val().length < minLength) {
-              isValid = false;
-              $input.after(
-                '<div class="error text-danger">' +
-                  $input.attr("name") +
-                  " must be at least " +
-                  minLength +
-                  " characters long.</div>"
-              );
-            }
-          }
-        });
-      if (isValid) {
-        // Form is valid, submit it
-        this.submit();
-      }
-    });
+    }
   });
+  // $(document).ready(function () {
+  //   $("#loginForm").submit(function (event) {
+  //     event.preventDefault();
+  //     var isValid = true;
+
+  //     $(".error").empty();
+
+  //     $(this)
+  //       .find(".required")
+  //       .each(function () {
+  //         var $input = $(this);
+  //         if ($input.val() === "") {
+  //           isValid = false;
+  //           $input.after(
+  //             '<div class="error text-danger">' +
+  //               $input.attr("name") +
+  //               " is required.</div>"
+  //           );
+  //         }
+  //       });
+
+  //     $(this)
+  //       .find(".required")
+  //       .each(function () {
+  //         var $input = $(this);
+  //         if ($input.val().includes(" ")) {
+  //           isValid = false;
+  //           $input.after(
+  //             '<div class="error text-danger">' +
+  //               $input.attr("name") +
+  //               " should not contain white spaces.</div>"
+  //           );
+  //         }
+  //       });
+
+  //     $(this)
+  //       .find(".email")
+  //       .each(function () {
+  //         var $input = $(this);
+
+  //         if ($input.val() !== "") {
+  //           var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //           if (!emailRegex.test($input.val())) {
+  //             isValid = false;
+  //             $input.after(
+  //               '<div class="error text-danger">' +
+  //                 $input.attr("name") +
+  //                 " is not a valid email address.</div>"
+  //             );
+  //           }
+  //         }
+  //       });
+
+  //     $(this)
+  //       .find(".password")
+  //       .each(function () {
+  //         var $input = $(this);
+
+  //         if ($input.val() !== "") {
+  //           //var minLength = parseInt($input.attr('minlength'));
+  //           var minLength = 8;
+  //           if ($input.val().length < minLength) {
+  //             isValid = false;
+  //             $input.after(
+  //               '<div class="error text-danger">' +
+  //                 $input.attr("name") +
+  //                 " must be at least " +
+  //                 minLength +
+  //                 " characters long.</div>"
+  //             );
+  //           }
+  //         }
+  //       });
+  //     if (isValid) {
+  //       // Form is valid, submit it
+  //       this.submit();
+  //     }
+  //   });
+  // });
 </script>
 <%- include('../footer') %>
